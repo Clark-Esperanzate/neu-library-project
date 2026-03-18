@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Complete Your Profile – NEU Library</title>
+  <link rel="stylesheet" href="styles/global.css"/>
+  <link rel="stylesheet" href="styles/login.css"/>
+</head>
+<body class="login-body">
+  <div class="bg-library"></div>
+  <div class="bg-overlay"></div>
+
+  <header class="login-header">
+    <div class="login-header-inner">
+      <div class="logo-block">
+        <svg width="42" height="42" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="23" fill="#0047AB" stroke="#FFD700" stroke-width="2.5"/>
+          <text x="24" y="31" text-anchor="middle" fill="#FFD700" font-size="20" font-weight="bold" font-family="Georgia,serif">N</text>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-main">New Era University</span>
+          <span class="logo-sub">Library Management System</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="login-main" style="justify-content:center;align-items:center">
+    <div class="login-card-wrap">
+      <div class="login-card">
+        <div class="login-card-top">
+          <div class="card-emblem">📋</div>
+          <h1 class="form-title">Complete Your Profile</h1>
+          <p class="form-subtitle">Almost there — we just need a few more details to finish setting up your account.</p>
+        </div>
+
+        <div id="error-alert" class="alert alert-error hidden"></div>
+
+        <!-- Google account info banner -->
+        <div style="display:flex;align-items:center;gap:.75rem;background:var(--blue-faint);border:1px solid rgba(0,71,171,.15);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1.25rem;">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <div>
+            <p style="font-size:.82rem;font-weight:600;color:var(--blue-dark)" id="profile-email-display">Signed in with Google</p>
+            <p style="font-size:.75rem;color:var(--gray-400)">Your NEU Google account</p>
+          </div>
+        </div>
+
+        <form id="profile-form" novalidate>
+          <!-- School ID -->
+          <div class="field-group">
+            <label class="field-label" for="school-id">School ID Number <span class="req">*</span></label>
+            <input class="field-input" type="text" id="school-id"
+              placeholder="24-13268-870" required/>
+            <span class="field-hint">Format: YY-NNNNN-NNN</span>
+          </div>
+
+          <!-- Name row (pre-filled from Google, editable) -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="first-name">First Name <span class="req">*</span></label>
+              <input class="field-input" type="text" id="first-name" required/>
+            </div>
+            <div class="field-group fg-mi">
+              <label class="field-label" for="middle-initial">M.I.</label>
+              <input class="field-input" type="text" id="middle-initial" maxlength="3"/>
+            </div>
+            <div class="field-group fg-grow">
+              <label class="field-label" for="last-name">Last Name <span class="req">*</span></label>
+              <input class="field-input" type="text" id="last-name" required/>
+            </div>
+          </div>
+
+          <!-- Account type -->
+          <div class="field-group">
+            <label class="field-label" for="user-type">Account Type <span class="req">*</span></label>
+            <select class="field-input field-select" id="user-type" required>
+              <option value="student">Student</option>
+              <option value="faculty">Faculty (Teacher)</option>
+              <option value="staff">Employee / Staff</option>
+            </select>
+          </div>
+
+          <!-- College + Program -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="college">College / Department <span class="req">*</span></label>
+              <select class="field-input field-select" id="college" required>
+                <option value="">Select…</option>
+                <option>College of Nursing</option>
+                <option>College of Computer Studies</option>
+                <option>College of Engineering</option>
+                <option>College of Business Administration</option>
+                <option>College of Education</option>
+                <option>College of Arts and Sciences</option>
+                <option>College of Architecture</option>
+                <option>College of Criminology</option>
+                <option>College of Medical Technology</option>
+                <option>College of Physical Therapy</option>
+                <option>Office / Administration</option>
+                <option>Faculty</option>
+              </select>
+            </div>
+            <div class="field-group fg-grow">
+              <label class="field-label" for="program">Program / Position <span class="req">*</span></label>
+              <input class="field-input" type="text" id="program"
+                placeholder="BS Computer Science" required/>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full" id="save-btn">
+            Save &amp; Continue to Library
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="scripts/data-store.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script type="module">
+    import { db, doc, updateDoc } from './scripts/firebase-config.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = DB.getSession();
+
+      // If no session or not a Google account, redirect back to login
+      if (!session || !session.googleAccount) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Pre-fill email display
+      const emailEl = document.getElementById('profile-email-display');
+      if (emailEl) emailEl.textContent = session.email;
+
+      // Pre-fill name from Google
+      document.getElementById('first-name').value  = session.firstName  || '';
+      document.getElementById('last-name').value   = session.lastName   || '';
+
+      // Auto-format School ID
+      document.getElementById('school-id').addEventListener('input', function() {
+        let v = this.value.replace(/[^0-9]/g, '');
+        if (v.length > 2) v = v.slice(0,2) + '-' + v.slice(2);
+        if (v.length > 8) v = v.slice(0,8) + '-' + v.slice(8);
+        if (v.length > 13) v = v.slice(0,13);
+        this.value = v;
+      });
+
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errEl = document.getElementById('error-alert');
+        errEl.classList.add('hidden');
+
+        const schoolId      = document.getElementById('school-id').value.trim();
+        const firstName     = document.getElementById('first-name').value.trim();
+        const middleInitial = document.getElementById('middle-initial').value.trim();
+        const lastName      = document.getElementById('last-name').value.trim();
+        const userType      = document.getElementById('user-type').value;
+        const college       = document.getElementById('college').value;
+        const program       = document.getElementById('program').value.trim();
+
+        if (!schoolId || !firstName || !lastName || !college || !program) {
+          errEl.textContent = 'Please fill in all required fields.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        if (!/^\d{2}-\d{4,6}-\d{3,4}$/.test(schoolId)) {
+          errEl.textContent = 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-13268-870).';
+          errEl.classList.remove('hidden');
+          return;
+        }
+
+        const btn = document.getElementById('save-btn');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        try {
+          const updates = {
+            schoolId, firstName, middleInitial, lastName,
+            userType, college, program,
+            needsProfile: false
+          };
+
+          // Update Firestore
+          if (session.firebaseUid) {
+            await updateDoc(doc(db, 'users', session.firebaseUid), updates);
+          }
+
+          // Update local localStorage user record
+          DB.updateUser(session.email, updates);
+
+          // Update session
+          const newSession = { ...session, ...updates };
+          DB.setSession(newSession);
+
+          // Redirect
+          window.location.href = newSession.activeRole === 'admin'
+            ? 'admin-dashboard.html'
+            : 'visitor-checkin.html';
+
+        } catch (err) {
+          console.error('Profile save error:', err);
+          errEl.textContent = 'Failed to save profile. Please try again.';
+          errEl.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Save & Continue to Library';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

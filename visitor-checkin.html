@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Check-In – NEU Library</title>
+  <link rel="stylesheet" href="styles/global.css"/>
+  <link rel="stylesheet" href="styles/visitor.css"/>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="logo-block">
+          <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="23" fill="#0047AB" stroke="#FFD700" stroke-width="2.5"/>
+            <text x="24" y="31" text-anchor="middle" fill="#FFD700" font-size="20" font-weight="bold" font-family="Georgia,serif">N</text>
+          </svg>
+          <div class="logo-text">
+            <span class="logo-main">New Era University</span>
+            <span class="logo-sub">Library Management System</span>
+          </div>
+        </div>
+        <div class="header-user-info">
+          <span id="header-user-name" class="user-badge"></span>
+          <!-- Admin-role switcher (shown only if account also has admin role) -->
+          <button class="role-switch-btn hidden" id="switch-to-admin-btn"
+            onclick="AUTH.switchRole('admin')">
+            ⬆ Switch to Admin
+          </button>
+          <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="checkin-main">
+      <!-- LEFT: Terminal + Stats -->
+      <aside class="terminal-panel">
+        <div class="terminal-box">
+          <div class="terminal-title-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+            <span class="terminal-label">VISITOR TERMINAL v2</span>
+          </div>
+          <div class="terminal-body">
+            <p class="terminal-line"><span class="t-label">STATUS</span><span class="t-value t-green">● ACTIVE</span></p>
+            <p class="terminal-line"><span class="t-label">DATE</span><span class="t-value" id="t-date">—</span></p>
+            <p class="terminal-line"><span class="t-label">TIME</span><span class="t-value t-blink" id="t-time">—</span></p>
+            <div class="term-divider"></div>
+            <p class="terminal-line"><span class="t-label">NAME</span><span class="t-value" id="t-name">—</span></p>
+            <p class="terminal-line"><span class="t-label">ID NO.</span><span class="t-value" id="t-id">—</span></p>
+            <p class="terminal-line"><span class="t-label">TYPE</span><span class="t-value t-yellow" id="t-usertype">—</span></p>
+            <p class="terminal-line"><span class="t-label">COLLEGE</span><span class="t-value" id="t-college">—</span></p>
+            <p class="terminal-line"><span class="t-label">PROGRAM</span><span class="t-value" id="t-program">—</span></p>
+            <p class="terminal-line"><span class="t-label">EMAIL</span><span class="t-value t-small" id="t-email">—</span></p>
+            <div class="term-divider"></div>
+            <p class="terminal-line"><span class="t-label">VISITS</span><span class="t-value t-blue" id="t-visits">0</span></p>
+          </div>
+        </div>
+
+        <div class="lib-stats-box">
+          <h3 class="sidebar-section-title">Library Today</h3>
+          <div class="lib-stat-row">
+            <span class="ls-icon">👥</span>
+            <div class="ls-info">
+              <span class="ls-num" id="ls-today">0</span>
+              <span class="ls-label">Visitors checked in</span>
+            </div>
+          </div>
+          <div class="lib-stat-row">
+            <span class="ls-icon">📈</span>
+            <div class="ls-info">
+              <span class="ls-num" id="ls-week">0</span>
+              <span class="ls-label">This week total</span>
+            </div>
+          </div>
+          <div class="lib-stat-row">
+            <span class="ls-icon">🏆</span>
+            <div class="ls-info">
+              <span class="ls-num" id="ls-top-college" style="font-size:.85rem">—</span>
+              <span class="ls-label">Top college today</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-visits-box">
+          <h3 class="sidebar-section-title">Your Visit History</h3>
+          <ul id="recent-visits-list" class="recent-list">
+            <li class="recent-item muted">No visits recorded yet.</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Form -->
+      <section class="checkin-section">
+        <div class="checkin-card">
+          <div class="checkin-header">
+            <h1 class="checkin-title">Library Check-In</h1>
+            <p class="checkin-subtitle">Please complete the form below to record your visit.</p>
+          </div>
+
+          <div id="error-alert" class="alert alert-error hidden"></div>
+
+          <form id="checkin-form">
+            <div class="field-group">
+              <label class="field-label">Purpose of Visit <span class="req">*</span></label>
+              <div class="purpose-grid" id="purpose-grid">
+                <button type="button" class="purpose-btn" data-value="Reading Books"><span class="pb-icon">📖</span><span class="pb-label">Reading Books</span></button>
+                <button type="button" class="purpose-btn" data-value="Research / Thesis"><span class="pb-icon">🔬</span><span class="pb-label">Research / Thesis</span></button>
+                <button type="button" class="purpose-btn" data-value="Use of Computer"><span class="pb-icon">💻</span><span class="pb-label">Use of Computer</span></button>
+                <button type="button" class="purpose-btn" data-value="Doing Assignments"><span class="pb-icon">📝</span><span class="pb-label">Doing Assignments</span></button>
+                <button type="button" class="purpose-btn" data-value="Borrowing Books"><span class="pb-icon">📚</span><span class="pb-label">Borrowing Books</span></button>
+                <button type="button" class="purpose-btn" data-value="Study Group"><span class="pb-icon">👥</span><span class="pb-label">Study Group</span></button>
+              </div>
+              <input type="hidden" id="purpose" required/>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="checkin-college">College / Department <span class="req">*</span></label>
+              <select class="field-input field-select" id="checkin-college" required>
+                <option value="">Select your college…</option>
+                <option>College of Nursing</option>
+                <option>College of Computer Studies</option>
+                <option>College of Engineering</option>
+                <option>College of Business Administration</option>
+                <option>College of Education</option>
+                <option>College of Arts and Sciences</option>
+                <option>College of Architecture</option>
+                <option>College of Criminology</option>
+                <option>College of Medical Technology</option>
+                <option>College of Physical Therapy</option>
+                <option>Office / Administration</option>
+                <option>Faculty</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="reason">Additional Notes <span class="optional">(optional)</span></label>
+              <textarea class="field-input field-textarea" id="reason" rows="3"
+                placeholder="e.g. Working on thesis, borrowing reference materials…"></textarea>
+            </div>
+
+            <button type="submit" class="btn-checkin-submit" id="checkin-submit-btn">
+              <span>✓</span> Complete Check-In
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Welcome Modal -->
+  <div id="welcome-modal" class="modal-overlay hidden">
+    <div class="welcome-card" id="welcome-print-area">
+      <div class="welcome-header">
+        <svg width="46" height="46" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="23" fill="#0047AB" stroke="#FFD700" stroke-width="2.5"/>
+          <text x="24" y="31" text-anchor="middle" fill="#FFD700" font-size="20" font-weight="bold" font-family="Georgia,serif">N</text>
+        </svg>
+        <div>
+          <p class="wh-school">New Era University Library</p>
+          <p class="wh-slip">Official Visitor Check-In Slip</p>
+        </div>
+      </div>
+      <div class="welcome-body">
+        <div class="welcome-checkmark">✓</div>
+        <h2 class="welcome-title">Welcome to the NEU Library!</h2>
+        <p class="welcome-name" id="welcome-name-text"></p>
+        <div class="welcome-details">
+          <div class="wd-row"><span class="wd-label">🆔 School ID</span><span class="wd-value" id="welcome-id"></span></div>
+          <div class="wd-row"><span class="wd-label">👤 Type</span><span class="wd-value" id="welcome-usertype"></span></div>
+          <div class="wd-row"><span class="wd-label">🏛️ College</span><span class="wd-value" id="welcome-college"></span></div>
+          <div class="wd-row"><span class="wd-label">🎯 Purpose</span><span class="wd-value" id="welcome-purpose"></span></div>
+          <div class="wd-row"><span class="wd-label">📅 Date</span><span class="wd-value" id="welcome-date"></span></div>
+          <div class="wd-row"><span class="wd-label">🕐 Time In</span><span class="wd-value" id="welcome-time"></span></div>
+          <div class="wd-row"><span class="wd-label">🔢 Visit No.</span><span class="wd-value t-blue" id="welcome-visitno"></span></div>
+        </div>
+        <p class="welcome-note">Please present this slip to the librarian on duty. Enjoy your visit!</p>
+      </div>
+      <div class="welcome-actions no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ Print Slip</button>
+        <button class="btn-primary" onclick="closeWelcomeModal()">Done ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/data-store.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/visitor-page.js"></script>
+</body>
+</html>

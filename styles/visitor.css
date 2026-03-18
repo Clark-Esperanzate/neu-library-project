@@ -1,0 +1,195 @@
+/* =========================================================
+   visitor.css  –  Check-in Page
+   ========================================================= */
+
+.page-wrapper { min-height:100vh; display:flex; flex-direction:column; }
+
+.checkin-main {
+  flex:1; display:flex; max-width:1300px; margin:0 auto; width:100%;
+  padding:1.75rem 1.5rem; gap:1.75rem; align-items:flex-start;
+}
+
+/* ── Terminal ───────────────────────────────────── */
+.terminal-panel {
+  flex:0 0 285px; display:flex; flex-direction:column; gap:1.2rem;
+  position:sticky; top:80px;
+}
+.terminal-box {
+  background:#08101e; border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 8px 28px rgba(0,0,0,.35); border:1px solid #1c2a45;
+}
+.terminal-title-bar {
+  background:#111c30; padding:.5rem .85rem;
+  display:flex; align-items:center; gap:.38rem;
+}
+.dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
+.dot-r{background:#ff5f57;} .dot-y{background:#febc2e;} .dot-g{background:#28c840;}
+.terminal-label {
+  margin-left:auto; font-family:'Courier New',monospace;
+  font-size:.64rem; color:#3a4f72; letter-spacing:.1em;
+}
+.terminal-body { padding:1rem .9rem; font-family:'Courier New',monospace; }
+.terminal-line {
+  font-size:.77rem; line-height:2.0; display:flex;
+  border-bottom:1px solid rgba(255,255,255,.03);
+}
+.t-label { color:#3a5080; min-width:68px; display:inline-block; font-size:.7rem; }
+.t-value { color:#7da8d8; flex:1; word-break:break-all; }
+.t-green  { color:#28c840 !important; }
+.t-yellow { color:#febc2e !important; }
+.t-blue   { color:#5ba3f5 !important; }
+.t-small  { font-size:.7rem; }
+.t-blink  { animation:blink 1.2s step-end infinite; }
+@keyframes blink { 50%{opacity:.4;} }
+.term-divider { border:none; border-top:1px solid #1c2a45; margin:.38rem 0; }
+
+/* ── Sidebar boxes ──────────────────────────────── */
+.lib-stats-box, .recent-visits-box {
+  background:var(--white); border-radius:var(--radius);
+  padding:1rem; box-shadow:var(--shadow-sm); border:1px solid var(--gray-200);
+}
+.sidebar-section-title {
+  font-family:var(--font-display); font-size:.75rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.06em; color:var(--gray-400); margin-bottom:.8rem;
+}
+.lib-stat-row {
+  display:flex; align-items:center; gap:.7rem; padding:.5rem 0;
+  border-bottom:1px solid var(--gray-100);
+}
+.lib-stat-row:last-child { border-bottom:none; }
+.ls-icon { font-size:1.25rem; }
+.ls-num   { font-family:var(--font-display); font-size:1.15rem; color:var(--blue); font-weight:700; line-height:1; }
+.ls-label { font-size:.7rem; color:var(--gray-400); margin-top:.1rem; }
+
+.recent-list { list-style:none; display:flex; flex-direction:column; gap:.42rem; }
+.recent-item {
+  font-size:.78rem; color:var(--gray-600); padding:.45rem .65rem;
+  background:var(--gray-50); border-radius:var(--radius-xs);
+  border-left:3px solid var(--blue-light); line-height:1.5;
+}
+.recent-item.muted { color:var(--gray-400); border-left-color:var(--gray-200); font-style:italic; }
+
+/* step bar removed */
+
+/* ── Check-in form card ─────────────────────────── */
+.checkin-section { flex:1; min-width:0; }
+.checkin-card {
+  background:var(--white); border-radius:var(--radius-lg);
+  padding:2.2rem 2rem; box-shadow:var(--shadow-lg);
+  border:1px solid var(--gray-200); max-width:660px;
+}
+.checkin-header { margin-bottom:1.7rem; }
+.checkin-title   { font-family:var(--font-display); font-size:1.8rem; color:var(--blue-dark); font-weight:700; letter-spacing:-.01em; }
+.checkin-subtitle { font-family:var(--font-serif); font-style:italic; color:var(--gray-400); margin-top:.28rem; font-size:.92rem; }
+
+/* ── Purpose grid ───────────────────────────────── */
+.purpose-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:.5rem;
+}
+.purpose-btn {
+  display:flex; flex-direction:column; align-items:center; gap:.38rem; padding:.8rem .5rem;
+  background:var(--gray-50); border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition);
+}
+.purpose-btn:hover   { border-color:var(--blue-light); background:var(--blue-faint); }
+.purpose-btn.selected {
+  border-color:var(--blue); background:var(--blue-faint);
+  box-shadow:0 0 0 3px rgba(0,71,171,.11);
+}
+.pb-icon  { font-size:1.55rem; line-height:1; }
+.pb-label { font-size:.73rem; font-weight:600; color:var(--gray-700); text-align:center; }
+.purpose-btn.selected .pb-label { color:var(--blue); }
+
+/* ── Submit button ──────────────────────────────── */
+.btn-checkin-submit {
+  width:100%; padding:.95rem 2rem; margin-top:.5rem;
+  background:var(--blue); color:var(--white);
+  border:none; border-radius:var(--radius-sm);
+  font-family:var(--font-body); font-weight:700; font-size:1rem;
+  cursor:pointer; transition:var(--transition);
+  display:flex; align-items:center; justify-content:center; gap:.6rem;
+}
+.btn-checkin-submit:hover { background:var(--blue-light); transform:translateY(-1px); box-shadow:var(--shadow-md); }
+
+/* ── Role switch banner ─────────────────────────── */
+.role-banner {
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--yellow-light); border:1px solid rgba(201,168,0,.3);
+  border-radius:var(--radius-sm); padding:.65rem 1rem;
+  font-size:.85rem; color:var(--gray-700); margin-bottom:1.2rem;
+}
+.role-banner strong { color:var(--blue-dark); }
+.role-banner-btn {
+  background:var(--blue); color:var(--white);
+  border:none; border-radius:var(--radius-xs);
+  padding:.32rem .85rem; font-size:.8rem; font-weight:600; cursor:pointer;
+  transition:var(--transition);
+}
+.role-banner-btn:hover { background:var(--blue-light); }
+
+/* ── Welcome modal ──────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(0,20,60,.78); backdrop-filter:blur(5px);
+  display:flex; align-items:center; justify-content:center;
+  z-index:999; padding:1rem;
+}
+.welcome-card {
+  background:var(--white); border-radius:var(--radius-xl);
+  max-width:480px; width:100%;
+  box-shadow:0 24px 72px rgba(0,71,171,.28); overflow:hidden;
+  animation:popIn .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes popIn { from{opacity:0;transform:scale(.85) translateY(22px)} to{opacity:1;transform:none} }
+.welcome-header {
+  background:var(--blue); padding:1.2rem 1.75rem;
+  display:flex; align-items:center; gap:.95rem;
+}
+.wh-school { color:var(--yellow); font-family:var(--font-display); font-size:.98rem; font-weight:700; }
+.wh-slip   { color:rgba(255,255,255,.65); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; }
+.welcome-body { padding:1.7rem 1.85rem; text-align:center; }
+.welcome-checkmark {
+  width:58px; height:58px; border-radius:50%; background:var(--green-bg); color:var(--green);
+  font-size:1.7rem; display:flex; align-items:center; justify-content:center;
+  margin:0 auto .95rem; font-weight:700;
+  animation:scaleIn .4s .25s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes scaleIn { from{transform:scale(0)} to{transform:scale(1)} }
+.welcome-title { font-family:var(--font-display); font-size:1.55rem; color:var(--blue-dark); margin-bottom:.28rem; font-weight:700; }
+.welcome-name  { font-family:var(--font-serif); font-size:1.05rem; font-style:italic; color:var(--blue-light); margin-bottom:1.2rem; }
+.welcome-details {
+  background:var(--blue-faint); border-radius:var(--radius-sm);
+  padding:.85rem 1rem; margin-bottom:1rem; text-align:left;
+}
+.wd-row   { display:flex; justify-content:space-between; gap:1rem; font-size:.84rem; padding:.2rem 0; }
+.wd-label { color:var(--gray-400); font-weight:500; }
+.wd-value { color:var(--gray-800); font-weight:600; text-align:right; }
+.t-blue   { color:var(--blue) !important; }
+.welcome-note { font-family:var(--font-serif); font-style:italic; font-size:.78rem; color:var(--gray-400); margin-bottom:1.2rem; }
+.welcome-actions { display:flex; gap:.7rem; padding:0 1.85rem 1.7rem; }
+.btn-print {
+  flex:1; padding:.68rem; background:var(--gray-100); border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm); font-family:var(--font-body); font-weight:600;
+  font-size:.87rem; cursor:pointer; transition:var(--transition);
+}
+.btn-print:hover { background:var(--gray-200); }
+.welcome-actions .btn-primary { flex:1; }
+
+/* ── Print ──────────────────────────────────────── */
+@media print {
+  body > *:not(.modal-overlay) { display:none !important; }
+  .modal-overlay { position:static; background:none; padding:0; }
+  .welcome-card { box-shadow:none; border:1px solid #ccc; max-width:100%; }
+  .no-print { display:none !important; }
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width:960px) {
+  .checkin-main { flex-direction:column; padding:1.25rem 1rem; }
+  .terminal-panel { flex:none; width:100%; position:static; }
+  .checkin-card { padding:1.5rem 1.2rem; max-width:100%; }
+  .purpose-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:480px) {
+  .step-bar { display:none; }
+}

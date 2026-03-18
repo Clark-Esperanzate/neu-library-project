@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – NEU Library</title>
+  <link rel="stylesheet" href="styles/global.css"/>
+  <link rel="stylesheet" href="styles/admin.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="admin-layout">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="23" fill="#0047AB" stroke="#FFD700" stroke-width="2.5"/>
+          <text x="24" y="31" text-anchor="middle" fill="#FFD700" font-size="20" font-weight="bold" font-family="Georgia,serif">N</text>
+        </svg>
+        <div>
+          <p class="sidebar-title">NEU Library</p>
+          <p class="sidebar-role">Administrator</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" onclick="navTo('dashboard',this)">
+          <span class="nav-icon">📊</span><span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="navTo('visitors',this)">
+          <span class="nav-icon">👥</span><span>Visitor Logs</span>
+          <span class="nav-badge" id="nav-badge-visitors"></span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="navTo('users',this)">
+          <span class="nav-icon">🔐</span><span>User Management</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="navTo('activity',this)">
+          <span class="nav-icon">⚡</span><span>Live Activity</span>
+          <span class="nav-dot pulse-dot"></span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="navTo('reports',this)">
+          <span class="nav-icon">📄</span><span>Reports</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-avatar-row">
+          <div class="admin-avatar" id="admin-avatar-letter">A</div>
+          <div>
+            <p class="admin-name"  id="admin-display-name">Admin</p>
+            <p class="admin-email" id="admin-display-email"></p>
+          </div>
+        </div>
+        <!-- Switch to Visitor mode if account has both roles -->
+        <button class="btn-switch-visitor hidden" id="switch-to-visitor-btn"
+          onclick="AUTH.switchRole('visitor')">↩ Switch to Visitor Mode</button>
+        <button class="btn-logout-sidebar" onclick="logout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div class="topbar-left">
+          <button class="btn-mobile-menu" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h1 class="page-heading" id="page-heading">Dashboard</h1>
+            <p class="page-subheading" id="current-datetime"></p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-today-badge">
+            <span class="tday-label">Today's Visitors</span>
+            <span class="tday-num" id="topbar-today-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DASHBOARD ─────────────────────────────── -->
+      <section id="section-dashboard" class="admin-section">
+
+        <!-- Date range filter -->
+        <div class="filter-bar">
+          <span class="filter-label">Period:</span>
+          <button class="filter-btn active" onclick="setRange('today',this)">Today</button>
+          <button class="filter-btn" onclick="setRange('week',this)">This Week</button>
+          <button class="filter-btn" onclick="setRange('month',this)">This Month</button>
+          <button class="filter-btn" onclick="setRange('custom',this)">Custom ▾</button>
+          <div id="custom-range-inputs" class="custom-range hidden">
+            <input type="date" id="date-from" class="field-input date-input"/>
+            <span class="range-to">to</span>
+            <input type="date" id="date-to" class="field-input date-input"/>
+            <button class="btn-primary btn-sm" onclick="applyCustomRange()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Advanced filters (purpose / college / visitor type) -->
+        <div class="adv-filters">
+          <div class="adv-filter-group">
+            <label class="adv-filter-label">Filter by Purpose</label>
+            <select class="adv-filter-select" id="filter-purpose" onchange="applyAdvFilters()">
+              <option value="all">All Purposes</option>
+              <option>Reading Books</option>
+              <option>Research / Thesis</option>
+              <option>Use of Computer</option>
+              <option>Doing Assignments</option>
+              <option>Borrowing Books</option>
+              <option>Study Group</option>
+            </select>
+          </div>
+          <div class="adv-filter-group">
+            <label class="adv-filter-label">Filter by College</label>
+            <select class="adv-filter-select" id="filter-college" onchange="applyAdvFilters()">
+              <option value="all">All Colleges</option>
+              <option>College of Nursing</option>
+              <option>College of Computer Studies</option>
+              <option>College of Engineering</option>
+              <option>College of Business Administration</option>
+              <option>College of Education</option>
+              <option>College of Arts and Sciences</option>
+              <option>College of Architecture</option>
+              <option>College of Criminology</option>
+              <option>College of Medical Technology</option>
+              <option>College of Physical Therapy</option>
+              <option>Office / Administration</option>
+              <option>Faculty</option>
+            </select>
+          </div>
+          <div class="adv-filter-group">
+            <label class="adv-filter-label">Filter by Visitor Type</label>
+            <select class="adv-filter-select" id="filter-usertype" onchange="applyAdvFilters()">
+              <option value="all">All Types</option>
+              <option value="student">Students</option>
+              <option value="faculty">Faculty (Teachers)</option>
+              <option value="staff">Employees / Staff</option>
+            </select>
+          </div>
+          <button class="adv-filter-reset" onclick="resetAdvFilters()">✕ Reset Filters</button>
+          <span class="adv-filter-active-badge hidden" id="adv-filter-badge">Filtered</span>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stat-cards-grid">
+          <div class="stat-card sc-blue">
+            <div class="sc-icon">👥</div>
+            <div class="sc-body"><p class="sc-num" id="stat-total">0</p><p class="sc-label">Visitors (Period)</p></div>
+          </div>
+          <div class="stat-card sc-yellow">
+            <div class="sc-icon">📅</div>
+            <div class="sc-body"><p class="sc-num" id="stat-today">0</p><p class="sc-label">Today's Visitors</p></div>
+          </div>
+          <div class="stat-card sc-white">
+            <div class="sc-icon">🏛️</div>
+            <div class="sc-body"><p class="sc-num" id="stat-colleges">0</p><p class="sc-label">Colleges Represented</p></div>
+          </div>
+          <div class="stat-card sc-faint">
+            <div class="sc-icon">📈</div>
+            <div class="sc-body"><p class="sc-num" id="stat-peak">—</p><p class="sc-label">Peak Visit Hour</p></div>
+          </div>
+          <div class="stat-card sc-green">
+            <div class="sc-icon">👤</div>
+            <div class="sc-body"><p class="sc-num" id="stat-users">0</p><p class="sc-label">Registered Users</p></div>
+          </div>
+          <div class="stat-card sc-red">
+            <div class="sc-icon">🚫</div>
+            <div class="sc-body"><p class="sc-num" id="stat-blocked">0</p><p class="sc-label">Blocked Accounts</p></div>
+          </div>
+        </div>
+
+        <!-- Visitor type breakdown cards -->
+        <div class="stat-cards-grid" id="usertype-cards" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card sc-faint">
+            <div class="sc-icon">🎓</div>
+            <div class="sc-body"><p class="sc-num" id="stat-students">0</p><p class="sc-label">Students</p></div>
+          </div>
+          <div class="stat-card sc-yellow">
+            <div class="sc-icon">🏫</div>
+            <div class="sc-body"><p class="sc-num" id="stat-faculty">0</p><p class="sc-label">Faculty / Teachers</p></div>
+          </div>
+          <div class="stat-card sc-white">
+            <div class="sc-icon">💼</div>
+            <div class="sc-body"><p class="sc-num" id="stat-staff">0</p><p class="sc-label">Employees / Staff</p></div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 class="chart-title">Visitors Per Day</h3>
+              <span class="chart-subtitle" id="chart-daily-sub"></span>
+            </div>
+            <canvas id="chart-daily" height="180"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header"><h3 class="chart-title">By College</h3></div>
+            <canvas id="chart-college" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header"><h3 class="chart-title">Purpose of Visit</h3></div>
+            <canvas id="chart-purpose" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header"><h3 class="chart-title">Visitor Type Breakdown</h3></div>
+            <canvas id="chart-usertype" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header"><h3 class="chart-title">College Breakdown</h3></div>
+          <div id="college-breakdown-table"></div>
+        </div>
+      </section>
+
+      <!-- ── VISITOR LOGS ──────────────────────────── -->
+      <section id="section-visitors" class="admin-section hidden">
+        <div class="section-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="visitor-search" class="search-input"
+              placeholder="Search name, ID, email, college, purpose…"
+              oninput="searchVisitors(this.value)"/>
+            <button class="search-clear" id="vsearch-clear" onclick="clearVisitorSearch()" style="display:none">✕</button>
+          </div>
+          <div class="filter-bar-inline">
+            <button class="filter-btn active" onclick="setVisitorRange('today',this)">Today</button>
+            <button class="filter-btn" onclick="setVisitorRange('week',this)">This Week</button>
+            <button class="filter-btn" onclick="setVisitorRange('month',this)">This Month</button>
+            <button class="filter-btn" onclick="setVisitorRange('all',this)">All Time</button>
+          </div>
+        </div>
+        <div class="table-meta" id="visitor-table-meta"></div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Name</th><th>School ID</th><th>Type</th><th>Email</th><th>College</th><th>Purpose</th><th>Date &amp; Time</th></tr></thead>
+            <tbody id="visitors-tbody"><tr><td colspan="8" class="empty-row">No records found.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="table-pagination" id="visitor-pagination"></div>
+      </section>
+
+      <!-- ── USER MANAGEMENT ───────────────────────── -->
+      <section id="section-users" class="admin-section hidden">
+        <div class="section-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="user-search" class="search-input"
+              placeholder="Search by name, email, or ID…"
+              oninput="searchUsers(this.value)"/>
+          </div>
+          <div class="filter-bar-inline">
+            <button class="filter-btn active" onclick="setUserFilter('all',this)">All</button>
+            <button class="filter-btn" onclick="setUserFilter('active',this)">Active</button>
+            <button class="filter-btn" onclick="setUserFilter('blocked',this)">Blocked</button>
+          </div>
+        </div>
+        <div class="table-meta" id="user-table-meta"></div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Type</th><th>College</th><th>Registered</th><th>Visits</th><th>Roles</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="9" class="empty-row">No users found.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── LIVE ACTIVITY ─────────────────────────── -->
+      <section id="section-activity" class="admin-section hidden">
+        <div class="activity-panel">
+          <div class="activity-header">
+            <h2 class="activity-title">⚡ Live Activity Feed</h2>
+            <div class="activity-live-dot"><span class="pulse-dot"></span> Live</div>
+          </div>
+          <p class="activity-desc">Displays the most recent visitor check-ins. Refreshes every 10 seconds.</p>
+          <div class="activity-stats-row">
+            <div class="act-stat"><p class="act-stat-num" id="act-today">0</p><p class="act-stat-label">Checked in today</p></div>
+            <div class="act-stat"><p class="act-stat-num" id="act-hour">0</p><p class="act-stat-label">This hour</p></div>
+            <div class="act-stat"><p class="act-stat-num" id="act-top">—</p><p class="act-stat-label">Top purpose today</p></div>
+          </div>
+          <div id="activity-feed" class="activity-feed">
+            <p class="activity-empty">No check-ins recorded yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── REPORTS ───────────────────────────────── -->
+      <section id="section-reports" class="admin-section hidden">
+        <div class="reports-layout">
+          <div class="reports-form-panel">
+            <h2 class="reports-title">📄 Generate PDF Report</h2>
+            <p class="reports-desc">Select a period and content, then download your report.</p>
+            <div class="field-group">
+              <label class="field-label">Report Period</label>
+              <select class="field-input field-select" id="report-range">
+                <option value="today">Today</option>
+                <option value="week" selected>This Week</option>
+                <option value="month">This Month</option>
+                <option value="all">All Time</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            <div id="report-custom-dates" class="field-row hidden">
+              <div class="field-group fg-grow"><label class="field-label">From</label><input type="date" id="report-from" class="field-input"/></div>
+              <div class="field-group fg-grow"><label class="field-label">To</label><input type="date" id="report-to" class="field-input"/></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Include Sections</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" id="rpt-summary" checked/> Summary Statistics</label>
+                <label class="checkbox-item"><input type="checkbox" id="rpt-college" checked/> Breakdown by College</label>
+                <label class="checkbox-item"><input type="checkbox" id="rpt-purpose" checked/> Breakdown by Purpose</label>
+                <label class="checkbox-item"><input type="checkbox" id="rpt-usertype" checked/> Breakdown by Visitor Type</label>
+                <label class="checkbox-item"><input type="checkbox" id="rpt-logs" checked/> Full Visitor Log</label>
+              </div>
+            </div>
+            <button class="btn-primary btn-download" onclick="generatePDFReport()">📥 &nbsp;Download PDF Report</button>
+          </div>
+          <div class="reports-preview-panel">
+            <h3 class="preview-title">Report Preview</h3>
+            <div id="report-preview" class="report-preview">
+              <div class="preview-empty"><div class="preview-empty-icon">📋</div><p>Configure options above and click Download to generate your report.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="scripts/data-store.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/admin-dashboard.js"></script>
+  <script src="scripts/pdf-report.js"></script>
+</body>
+</html>

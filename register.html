@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – NEU Library</title>
+  <link rel="stylesheet" href="styles/global.css"/>
+  <link rel="stylesheet" href="styles/login.css"/>
+</head>
+<body class="login-body">
+  <div class="bg-library bg-library--alt"></div>
+  <div class="bg-overlay"></div>
+
+  <header class="login-header">
+    <div class="login-header-inner">
+      <div class="logo-block">
+        <svg width="42" height="42" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="23" fill="#0047AB" stroke="#FFD700" stroke-width="2.5"/>
+          <text x="24" y="31" text-anchor="middle" fill="#FFD700" font-size="20" font-weight="bold" font-family="Georgia,serif">N</text>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-main">New Era University</span>
+          <span class="logo-sub">Library Management System</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Sign In</a>
+        <a href="register.html" class="nav-link active">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="login-main login-main--register">
+    <div class="login-card-wrap login-card-wrap--wide">
+      <div class="login-card">
+        <div class="login-card-top">
+          <div class="card-emblem">✍️</div>
+          <h1 class="form-title">Create Account</h1>
+          <p class="form-subtitle">Register using your NEU institutional details</p>
+        </div>
+
+        <div id="error-alert"   class="alert alert-error   hidden"></div>
+        <div id="success-alert" class="alert alert-success hidden"></div>
+
+        <form id="register-form" class="auth-form" novalidate>
+
+          <!-- School ID + User Type -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="school-id">School ID Number <span class="req">*</span></label>
+              <input class="field-input" type="text" id="school-id"
+                placeholder="24-*****-***" required/>
+              <span class="field-hint">Format: YY-NNNNN-NNN</span>
+            </div>
+            <div class="field-group" style="flex:0 0 170px">
+              <label class="field-label" for="user-type">Account Type <span class="req">*</span></label>
+              <select class="field-input field-select" id="user-type" required>
+                <option value="student">Student</option>
+                <option value="faculty">Faculty (Teacher)</option>
+                <option value="staff">Employee / Staff</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Name -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="first-name">First Name <span class="req">*</span></label>
+              <input class="field-input" type="text" id="first-name" placeholder="Juan" required/>
+            </div>
+            <div class="field-group fg-mi">
+              <label class="field-label" for="middle-initial">M.I.</label>
+              <input class="field-input" type="text" id="middle-initial" placeholder="D." maxlength="3"/>
+            </div>
+            <div class="field-group fg-grow">
+              <label class="field-label" for="last-name">Last Name <span class="req">*</span></label>
+              <input class="field-input" type="text" id="last-name" placeholder="dela Cruz" required/>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label class="field-label" for="reg-email">Institutional Email <span class="req">*</span></label>
+            <div class="input-icon-wrap">
+              <span class="iicon">✉️</span>
+              <input class="field-input fld-icon" type="email" id="reg-email"
+                placeholder="juan.delacruz@neu.edu.ph" required/>
+            </div>
+            <span class="field-hint">Must end in <strong>@neu.edu.ph</strong></span>
+          </div>
+
+          <!-- College + Program -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="college">College / Department <span class="req">*</span></label>
+              <select class="field-input field-select" id="college" required>
+                <option value="">Select…</option>
+                <option>College of Nursing</option>
+                <option>College of Computer Studies</option>
+                <option>College of Engineering</option>
+                <option>College of Business Administration</option>
+                <option>College of Education</option>
+                <option>College of Arts and Sciences</option>
+                <option>College of Architecture</option>
+                <option>College of Criminology</option>
+                <option>College of Medical Technology</option>
+                <option>College of Physical Therapy</option>
+                <option>Office / Administration</option>
+                <option>Faculty</option>
+              </select>
+            </div>
+            <div class="field-group fg-grow">
+              <label class="field-label" for="program">Program / Position <span class="req">*</span></label>
+              <input class="field-input" type="text" id="program"
+                placeholder="BS Computer Science / Librarian" required/>
+            </div>
+          </div>
+
+          <!-- Passwords -->
+          <div class="field-row">
+            <div class="field-group fg-grow">
+              <label class="field-label" for="reg-password">Password <span class="req">*</span></label>
+              <div class="input-icon-wrap">
+                <span class="iicon">🔒</span>
+                <input class="field-input fld-icon" type="password" id="reg-password"
+                  placeholder="Min. 8 characters" required/>
+                <button type="button" class="toggle-pw" onclick="togglePassword('reg-password',this)">
+                  <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="field-group fg-grow">
+              <label class="field-label" for="confirm-password">Confirm Password <span class="req">*</span></label>
+              <div class="input-icon-wrap">
+                <span class="iicon">🔒</span>
+                <input class="field-input fld-icon" type="password" id="confirm-password"
+                  placeholder="Repeat password" required/>
+                <button type="button" class="toggle-pw" onclick="togglePassword('confirm-password',this)">
+                  <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar"><div id="pw-strength-fill" class="pw-fill"></div></div>
+            <span id="pw-strength-label" class="pw-label"></span>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full">Create My Account</button>
+        </form>
+
+        <div class="card-divider"><span>Already registered?</span></div>
+        <a href="index.html" class="btn-outline btn-full">Back to Sign In</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="scripts/data-store.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/register-page.js"></script>
+</body>
+</html>
