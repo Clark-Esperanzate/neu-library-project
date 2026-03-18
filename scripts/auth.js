@@ -85,7 +85,7 @@ const AUTH = {
     if (!this.isInstitutionalEmail(email))
       return { success: false, error: 'Only @neu.edu.ph institutional email addresses are accepted.' };
     if (!/^\d{2}-\d{4,6}-\d{3,4}$/.test(schoolId.trim()))
-      return { success: false, error: 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-13268-870).' };
+      return { success: false, error: 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-*****-***).' };
     if (password.length < 8)
       return { success: false, error: 'Password must be at least 8 characters.' };
     if (password !== confirmPassword)

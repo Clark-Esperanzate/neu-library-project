@@ -41,45 +41,61 @@ async function firebaseGoogleSignIn() {
       return;
     }
 
-    // Look up or create user profile in Firestore
+    // Look up user profile — check Firestore by UID first, then by email
     const userRef  = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
     let profile;
     if (userSnap.exists()) {
+      // Found in Firestore by UID
       profile = userSnap.data();
-
-      // Blocked check
-      if (profile.isBlocked) {
-        await signOut(auth);
-        showError('This account has been suspended. Please contact library administration.');
-        return;
-      }
     } else {
-      // First-time Google sign-in — create their profile
-      const nameParts  = (user.displayName || '').trim().split(' ');
-      const firstName  = nameParts[0] || 'User';
-      const lastName   = nameParts.slice(1).join(' ') || '';
+      // Not found by UID — check localStorage by email
+      // (accounts originally created via password login)
+      const localUser = DB.getUserByEmail(email);
 
-      profile = {
-        uid:           user.uid,
-        email,
-        firstName,
-        middleInitial: '',
-        lastName,
-        schoolId:      '',        // user fills this in after first login
-        college:       '',
-        program:       '',
-        userType:      'student',
-        role:          'visitor',
-        roles:         ['visitor'],
-        isBlocked:     false,
-        googleAccount: true,
-        registeredAt:  new Date().toISOString(),
-        needsProfile:  true       // flag: prompt to complete profile
-      };
+      if (localUser) {
+        // Existing account found — migrate it to Firestore
+        const { password: _, ...safeLocal } = localUser;
+        profile = {
+          ...safeLocal,
+          uid:           user.uid,
+          googleAccount: true,
+          needsProfile:  false  // already has full profile
+        };
+        // Save to Firestore so future Google logins work
+        await setDoc(userRef, profile);
+        // Update localStorage record with Firebase UID
+        DB.updateUser(email, { uid: user.uid, googleAccount: true });
+      } else {
+        // Truly new user — needs to complete profile
+        const nameParts = (user.displayName || '').trim().split(' ');
+        profile = {
+          uid:           user.uid,
+          email,
+          firstName:     nameParts[0] || 'User',
+          middleInitial: '',
+          lastName:      nameParts.slice(1).join(' ') || '',
+          schoolId:      '',
+          college:       '',
+          program:       '',
+          userType:      'student',
+          role:          'visitor',
+          roles:         ['visitor'],
+          isBlocked:     false,
+          googleAccount: true,
+          registeredAt:  new Date().toISOString(),
+          needsProfile:  true
+        };
+        await setDoc(userRef, profile);
+      }
+    }
 
-      await setDoc(userRef, profile);
+    // Blocked check — applies regardless of how profile was found
+    if (profile.isBlocked) {
+      await signOut(auth);
+      showError('This account has been suspended. Please contact library administration.');
+      return;
     }
 
     // Sync into localStorage session (keeps the rest of the app working)

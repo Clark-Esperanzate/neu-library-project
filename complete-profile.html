@@ -56,7 +56,7 @@
           <div class="field-group">
             <label class="field-label" for="school-id">School ID Number <span class="req">*</span></label>
             <input class="field-input" type="text" id="school-id"
-              placeholder="24-13268-870" required/>
+              placeholder="24-*****-***" required/>
             <span class="field-hint">Format: YY-NNNNN-NNN</span>
           </div>
 
@@ -171,7 +171,7 @@
           return;
         }
         if (!/^\d{2}-\d{4,6}-\d{3,4}$/.test(schoolId)) {
-          errEl.textContent = 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-13268-870).';
+          errEl.textContent = 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-*****-***).';
           errEl.classList.remove('hidden');
           return;
         }
