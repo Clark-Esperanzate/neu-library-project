@@ -1,6 +1,8 @@
 # NEU Library Visitor Management System
 
-A digital logbook web application to track and analyze library usage by students and faculty at **New Era University**.
+🌐 **Live Website:** [https://neu-library-1591c.web.app/index.html](https://neu-library-1591c.web.app/index.html)
+
+A digital logbook web application to track and analyze library visits by students, faculty, and staff at **New Era University**.
 
 ---
 
@@ -8,217 +10,120 @@ A digital logbook web application to track and analyze library usage by students
 
 ```
 neu-library/
-├── index.html              ← Login page (entry point)
-├── register.html           ← New user registration
-├── visitor-checkin.html    ← Visitor check-in form + terminal display
-├── admin-dashboard.html    ← Admin statistics, logs, user management
+├── index.html                ← Login page (entry point)
+├── register.html             ← New user registration
+├── visitor-checkin.html      ← Visitor check-in form + terminal display
+├── admin-dashboard.html      ← Admin statistics, logs, user management
+├── complete-profile.html     ← Profile completion for first-time Google sign-in
+├── firebase.json             ← Firebase Hosting configuration
+├── .firebaserc               ← Firebase project ID binding
 │
 ├── styles/
-│   ├── global.css          ← Shared base styles, header, buttons, forms
-│   ├── login.css           ← Login & register page styles
-│   ├── visitor.css         ← Check-in page & terminal styles
-│   └── admin.css           ← Admin dashboard layout & components
+│   ├── global.css            ← Shared base styles, header, buttons, forms
+│   ├── login.css             ← Login & register page styles
+│   ├── visitor.css           ← Check-in page & terminal styles
+│   └── admin.css             ← Admin dashboard layout & components
 │
 └── scripts/
-    ├── data-store.js       ← localStorage database (users + visits)
-    ├── auth.js             ← Authentication, session, validation
-    ├── login-page.js       ← Login form logic
-    ├── register-page.js    ← Registration form logic
-    ├── visitor-page.js     ← Check-in + welcome modal logic
-    ├── admin-dashboard.js  ← Charts, filters, user management
-    └── pdf-report.js       ← PDF report generation (jsPDF)
+    ├── data-store.js         ← localStorage data layer (users + visits)
+    ├── auth.js               ← Authentication, session, RBAC, validation
+    ├── firebase-config.js    ← Firebase project config (edit this first)
+    ├── firebase-auth.js      ← Firebase Google Sign-In + Firestore sync
+    ├── login-page.js         ← Login form logic
+    ├── register-page.js      ← Registration form logic + password strength
+    ├── visitor-page.js       ← Check-in form, terminal, welcome modal
+    ├── admin-dashboard.js    ← Charts, filters, user management, activity feed
+    └── pdf-report.js         ← PDF report generation (jsPDF)
 ```
 
 ---
 
 ## 🚀 Features
 
-- **Institutional Email Enforcement** — Only `@neu.edu.ph` emails allowed
-- **Student & Faculty Check-in** — Purpose of visit + college selection
-- **Welcome Terminal Display** — Shows visitor info after check-in
-- **Admin Dashboard** — Charts by day, college, and purpose
+- **Institutional Email Enforcement** — Only `@neu.edu.ph` emails are accepted
+- **Google Sign-In** — Sign in with your NEU Google account (requires Firebase setup)
+- **Password + ID Login** — Sign in using school ID number or institutional email
+- **Student / Faculty / Staff Check-in** — Purpose of visit + college selection
+- **Visitor Terminal Display** — Live terminal showing visitor info on the left panel
+- **Welcome Slip** — Printable check-in slip shown after successful check-in
+- **Admin Dashboard** — Charts by day, college, purpose, visitor type, and hour
+- **Advanced Filters** — Filter statistics by purpose, college, and visitor type
 - **Date Filters** — Today / This Week / This Month / Custom Range
-- **User Management** — Block/unblock users
-- **Visitor Search** — Search logs by name, email, or college
-- **PDF Report Download** — Downloadable reports with statistics
+- **Role-Based Access Control (RBAC)** — Accounts can hold both Visitor and Admin roles simultaneously with a Switch button
+- **User Management** — Block/unblock users, grant/revoke admin roles, delete accounts
+- **Visitor Search** — Search logs by name, email, ID, college, or purpose
+- **Live Activity Feed** — Real-time feed of recent check-ins, auto-refreshes every 10 seconds
+- **PDF Report Download** — Downloadable reports with statistics by period
+- **Firebase Firestore** — Role and profile changes persist across devices and sessions
+- **Cross-device Sync** — Google account users are synced via Firestore
 
 ---
 
 ## 🎨 Color Palette
 
-| Color  | Hex       | Usage                     |
-|--------|-----------|---------------------------|
-| Blue   | `#0047AB` | Primary (header, buttons) |
-| Yellow | `#FFD700` | Accents, highlights       |
-| White  | `#FFFFFF` | Backgrounds, text         |
+| Color  | Hex       | Usage                      |
+|--------|-----------|----------------------------|
+| Blue   | `#0047AB` | Primary (header, sidebar)  |
+| Yellow | `#FFD700` | Accents, highlights, CTA   |
+| White  | `#FFFFFF` | Backgrounds, card surfaces |
 
 ---
 
-## 🔐 Demo Login Credentials
+## 🔐 Default Login Credentials
 
-| Role    | Email / ID         | Password   |
-|---------|--------------------|------------|
-| Admin   | admin@neu.edu.ph   | admin123   |
-| Visitor | juan@neu.edu.ph    | visitor123 |
-| Visitor | 2021-00001 (ID)    | visitor123 |
+| Role    | Email                           | Password    |
+|---------|---------------------------------|-------------|
+| Admin   | admin@neu.edu.ph                | admin123    |
+| Admin   | clark.esperanzate@neu.edu.ph    | Taskaru777  |
 
----
-
-## 📦 Publishing to GitHub Pages
-
-Follow these steps to host your project for free on GitHub Pages.
-
-### Step 1 – Create a GitHub Account
-Go to https://github.com and sign up (or log in).
-
-### Step 2 – Create a New Repository
-1. Click the **"+"** icon in the top right → **New repository**
-2. Name it: `neu-library-vms` (or any name you prefer)
-3. Set visibility to **Public**
-4. Do **NOT** check "Add a README" (we already have one)
-5. Click **Create repository**
-
-### Step 3 – Upload Your Files
-#### Option A – Using GitHub Website (Easiest)
-1. On your new empty repository page, click **"uploading an existing file"**
-2. Drag and drop ALL your project files and folders:
-   - `index.html`
-   - `register.html`
-   - `visitor-checkin.html`
-   - `admin-dashboard.html`
-   - `styles/` folder (all 4 CSS files)
-   - `scripts/` folder (all 7 JS files)
-   - `README.md`
-3. Click **Commit changes**
-
-#### Option B – Using Git CLI
-```bash
-# 1. Install Git: https://git-scm.com/downloads
-
-# 2. Open a terminal in your project folder
-cd neu-library
-
-# 3. Initialize git
-git init
-
-# 4. Add all files
-git add .
-
-# 5. Commit
-git commit -m "Initial commit - NEU Library VMS"
-
-# 6. Connect to GitHub (replace YOUR_USERNAME and REPO_NAME)
-git remote add origin https://github.com/YOUR_USERNAME/neu-library-vms.git
-
-# 7. Push
-git branch -M main
-git push -u origin main
-```
-
-### Step 4 – Enable GitHub Pages
-1. Go to your repository on GitHub
-2. Click **Settings** tab
-3. Scroll down to **Pages** (left sidebar)
-4. Under **Source**, select: **Deploy from a branch**
-5. Under **Branch**, choose: **main** and **/ (root)**
-6. Click **Save**
-
-### Step 5 – Access Your Live Website
-After 1–2 minutes, your site will be live at:
-```
-https://YOUR_USERNAME.github.io/neu-library-vms/
-```
+> These accounts are seeded automatically on first load. All other accounts must be registered through the Register page or Google Sign-In.
 
 ---
 
-## ⚠️ Important Notes
+## 🪪 School ID Format
 
-- **Data Storage**: This app uses `localStorage` — data is stored in the browser. It does NOT use a real server or database. For production use, connect to Firebase Firestore.
-- **No Backend Required**: The entire app runs in the browser — HTML, CSS, and JavaScript only.
-- **PDF Library**: Uses jsPDF loaded from CDN — internet connection required for PDF downloads.
-- **Charts**: Uses Chart.js loaded from CDN — internet connection required for charts to display.
+School IDs must follow the format: **`YY-NNNNN-NNN`**
+Example: `**-*****-***`
 
----
-
-## 🔮 Future Enhancements (Production)
-
-If you want to upgrade to a real backend:
-
-1. **Firebase Firestore** — Free NoSQL database from Google
-   - Replace `data-store.js` with Firebase SDK calls
-   - Security rules: Only admins read all logs; users create their own visits
-
-2. **Firebase Authentication** — Google Sign-In with domain restriction
-   - Use `hd: 'neu.edu.ph'` in Google OAuth to restrict to NEU accounts
-
-3. **Firebase Hosting** — Free hosting with custom domain support
-   ```bash
-   npm install -g firebase-tools
-   firebase login
-   firebase init hosting
-   firebase deploy
-   ```
+The registration form auto-formats the ID as you type.
 
 ---
 
-## 📋 Suggested Firestore Schema
+## 👤 User Roles
 
-```javascript
-// Collection: users
-{
-  uid: "string",
-  schoolId: "2021-00001",
-  firstName: "Juan",
-  middleInitial: "D.",
-  lastName: "dela Cruz",
-  email: "juan@neu.edu.ph",
-  college: "College of Computer Studies",
-  program: "BS Computer Science",
-  role: "visitor",          // "visitor" | "admin"
-  isBlocked: false,
-  registeredAt: Timestamp
-}
+| Role    | Access                                                                 |
+|---------|------------------------------------------------------------------------|
+| Visitor | Check-in form, visit history, welcome slip                             |
+| Admin   | Full dashboard, visitor logs, user management, reports, activity feed  |
 
-// Collection: visits
-{
-  id: "string",
-  userId: "string",
-  email: "juan@neu.edu.ph",
-  name: "Juan D. dela Cruz",
-  schoolId: "2021-00001",
-  college: "College of Computer Studies",
-  purpose: "Research / Thesis",
-  notes: "Working on capstone",
-  timestamp: Timestamp
-}
-```
+- A single account can hold **both** roles simultaneously
+- Accounts with both roles see a **Switch to Admin / Switch to Visitor** button
+- Admin can grant or revoke admin role from any user in User Management
+- Role changes are synced to **Firestore immediately** and persist across devices
 
 ---
 
-## 📝 Security Rules (Firestore)
+## 📱 User Types
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+| Type    | Description              |
+|---------|--------------------------|
+| Student | Undergraduate / Graduate |
+| Faculty | Teachers / Professors    |
+| Staff   | Employees / Admin staff  |
 
-    // Users collection
-    match /users/{userId} {
-      allow read: if request.auth.token.email.matches('.*@neu.edu.ph');
-      allow write: if request.auth.uid == userId
-                   || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Visits collection
-    match /visits/{visitId} {
-      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      allow create: if request.auth.token.email.matches('.*@neu.edu.ph')
-                    && request.resource.data.userId == request.auth.uid;
-    }
-  }
-}
-```
+User type is set during registration and is used for filtering in the admin dashboard.
 
 ---
 
-*NEU Library Visitor Management System — Developed for New Era University Library*
+## 🔄 Data Storage
+
+| Data          | Storage                    | Cross-device |
+|---------------|----------------------------|--------------|
+| User profiles | localStorage + Firestore   | ✅ via Google Sign-In |
+| Visit logs    | localStorage               | ❌ browser only |
+| Sessions      | sessionStorage             | ❌ tab only |
+| Role changes  | localStorage + Firestore   | ✅ synced immediately |
+
+> Visit logs are currently stored in localStorage only. Users who sign in via Google will have their **profile and roles** synced across devices, but **visit history** is per-browser. Full cross-device visit sync would require storing visits in Firestore as well.
+
+---
