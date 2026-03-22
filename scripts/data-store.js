@@ -147,9 +147,9 @@ const DB = {
     if (this.getUsers().length > 0) return;
 
     // Admin (also visitor role for switching)
-    this.addUser({ schoolId:'ADM-001', firstName:'Library', middleInitial:'', lastName:'Admin',
-      email:'admin@neu.edu.ph', college:'Office / Administration', program:'Library Services',
-      password:'admin123', role:'admin', roles:['admin','visitor'], userType:'staff' });
+    this.addUser({ schoolId:'ADM-001', firstName:'J.', middleInitial:'C.', lastName:'Esperanza',
+      email:'jcesperanza@neu.edu.ph', college:'Office / Administration', program:'Library Services',
+      password:'', role:'admin', roles:['admin','visitor'], userType:'staff' });
 
     // Demo visitor/admin
     this.addUser({ schoolId:'24-13268-870', firstName:'Clark', middleInitial:'L.', lastName:'Esperanzate',
@@ -166,7 +166,7 @@ const DB = {
    Change this number any time a breaking data change
    is made.
    ─────────────────────────────────────────────────── */
-const SCHEMA_VERSION = '6';
+const SCHEMA_VERSION = '7';
 
 (function migrateIfNeeded() {
   const stored = localStorage.getItem('neu_schema_version');

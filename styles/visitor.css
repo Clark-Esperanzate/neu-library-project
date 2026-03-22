@@ -193,3 +193,21 @@
 @media (max-width:480px) {
   .step-bar { display:none; }
 }
+
+/* ── Welcome countdown ──────────────────────────── */
+.welcome-countdown-bar {
+  height: 4px; background: var(--gray-200); margin: 0 1.85rem .5rem;
+  border-radius: 99px; overflow: hidden;
+}
+.welcome-countdown-fill {
+  height: 100%; background: var(--blue);
+  width: 100%;
+  animation: countdown 7s linear forwards;
+  border-radius: 99px;
+}
+@keyframes countdown { from { width: 100%; } to { width: 0%; } }
+.welcome-redirect-note {
+  text-align: center; font-size: .78rem; color: var(--gray-400);
+  margin-bottom: .75rem; font-family: var(--font-serif); font-style: italic;
+}
+.welcome-redirect-note strong { color: var(--blue); }

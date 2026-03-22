@@ -332,6 +332,25 @@
 
   <script src="scripts/data-store.js"></script>
   <script src="scripts/auth.js"></script>
+
+  <!-- Firebase bridge: loads as module, exposes sync functions as window globals -->
+  <script type="module">
+    import { syncVisitsFromFirestore, syncUsersFromFirestore,
+             addVisitToFirestore } from './scripts/firebase-auth.js';
+    window._syncVisitsFromFirestore = syncVisitsFromFirestore;
+    window._syncUsersFromFirestore  = syncUsersFromFirestore;
+    window._addVisitToFirestore     = addVisitToFirestore;
+    window._firebaseBridgeReady     = true;
+    // Trigger re-render after sync completes
+    Promise.all([syncVisitsFromFirestore(), syncUsersFromFirestore()])
+      .then(() => {
+        if (typeof loadDashboard === 'function') loadDashboard(window._currentRange || 'today');
+        if (typeof loadVisitorLogs === 'function') loadVisitorLogs(window._currentVisitorRange || 'today');
+        if (typeof loadUserManagement === 'function') loadUserManagement('all');
+      })
+      .catch(e => console.warn('Firebase sync error:', e));
+  </script>
+
   <script src="scripts/admin-dashboard.js"></script>
   <script src="scripts/pdf-report.js"></script>
 </body>

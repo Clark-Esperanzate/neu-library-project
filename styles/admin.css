@@ -214,6 +214,7 @@ body { background: var(--off-white); }
 .btn-revoke-admin  { background:var(--yellow-light); color:var(--yellow-dark); font-size:.72rem; padding:.28rem .65rem; border:1px solid rgba(201,168,0,.3); border-radius:var(--radius-xs); cursor:pointer; transition:var(--transition); }
 .btn-revoke-admin:hover { background:var(--yellow-dark); color:#fff; }
 
+
 /* ── Activity feed ──────────────────────────────── */
 .activity-panel { max-width:860px; }
 .activity-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.38rem; }

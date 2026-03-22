@@ -23,31 +23,24 @@
           <span class="logo-sub">Library Management System</span>
         </div>
       </div>
-      <nav class="header-nav">
-        <a href="index.html" class="nav-link active">Sign In</a>
-        <a href="register.html" class="nav-link">Register</a>
-      </nav>
     </div>
   </header>
 
-  <main class="login-main">
-    <!-- LEFT: Card -->
+  <main class="login-main login-main--centered">
     <div class="login-card-wrap">
       <div class="login-card">
         <div class="login-card-top">
           <div class="card-emblem">🏛️</div>
-          <h1 class="form-title">Welcome Back</h1>
-          <p class="form-subtitle">Sign in to access the NEU Library system</p>
+          <h1 class="form-title">NEU Library</h1>
+          <p class="form-subtitle">Sign in with your institutional Google account to continue</p>
         </div>
 
         <div id="error-alert" class="alert alert-error hidden"></div>
 
-        <!-- Google Sign-In -->
-        <div class="google-btn-wrap" id="google-btn-area">
-          <!-- This button activates once a real Google Client ID is configured.
-               See README.md → "Setting up Google Sign-In" for instructions.   -->
-          <button class="btn-google" id="google-signin-btn" onclick="handleGoogleClick()" disabled title="Google Sign-In requires configuration — see README">
-            <svg width="18" height="18" viewBox="0 0 48 48">
+        <!-- Google Sign-In — the only login method -->
+        <div class="google-btn-wrap">
+          <button class="btn-google btn-google--large" id="google-signin-btn" onclick="handleGoogleClick()" disabled>
+            <svg width="20" height="20" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
               <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
               <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
@@ -55,43 +48,12 @@
             </svg>
             Continue with Google (@neu.edu.ph)
           </button>
-          <p class="google-notice" id="google-notice" style="display:none"></p>
+          <p class="google-domain-note">Only @neu.edu.ph accounts are permitted</p>
         </div>
 
-        <div class="card-divider"><span>or sign in with credentials</span></div>
-
-        <form id="login-form" class="auth-form" novalidate>
-          <div class="field-group">
-            <label class="field-label" for="login-id">School ID Number or Email</label>
-            <div class="input-icon-wrap">
-              <span class="iicon">👤</span>
-              <input class="field-input fld-icon" type="text" id="login-id"
-                placeholder="24-*****-***  or  juan@neu.edu.ph" autocomplete="username"/>
-            </div>
-            <span class="field-hint">Use your NEU School ID or @neu.edu.ph email address</span>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="login-password">Password</label>
-            <div class="input-icon-wrap">
-              <span class="iicon">🔑</span>
-              <input class="field-input fld-icon" type="password" id="login-password"
-                placeholder="Your password" autocomplete="current-password"/>
-              <button type="button" class="toggle-pw" onclick="togglePassword('login-password',this)">
-                <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-primary btn-full" id="login-btn">
-            <span class="btn-text">Sign In to Library</span>
-            <span class="btn-loader hidden">● ● ●</span>
-          </button>
-        </form>
-
-        <div class="card-divider"><span>new to the system?</span></div>
-        <a href="register.html" class="btn-outline btn-full">Create an Account</a>
-
+        <div class="login-divider-note">
+          Don't have an account yet? <a href="register.html" class="link-accent">Register here</a>
+        </div>
       </div>
     </div>
 
@@ -113,25 +75,23 @@
   <script src="scripts/auth.js"></script>
   <script src="scripts/login-page.js"></script>
 
-  <!-- Firebase Google Sign-In (module) -->
   <script type="module">
     import { firebaseGoogleSignIn } from './scripts/firebase-auth.js';
+    import { firebaseConfig } from './scripts/firebase-config.js';
 
-    // Expose to onclick handler in HTML
     window.handleGoogleClick = firebaseGoogleSignIn;
 
-    // Check if Firebase is configured and enable/disable button
-    import { firebaseConfig } from './scripts/firebase-config.js';
     const configured = firebaseConfig.apiKey !== 'YOUR_API_KEY';
-    const btn    = document.getElementById('google-signin-btn');
-    const notice = document.getElementById('google-notice');
-    if (configured) {
-      btn.disabled = false;
-      if (notice) notice.style.display = 'none';
-    }
+    const btn = document.getElementById('google-signin-btn');
+    if (configured) btn.disabled = false;
   </script>
-
   <script>
+    function handleGoogleClick() {
+      // Fallback if module hasn't loaded yet
+      const errEl = document.getElementById('error-alert');
+      errEl.textContent = 'Loading… please try again in a moment.';
+      errEl.classList.remove('hidden');
+    }
   </script>
 </body>
 </html>

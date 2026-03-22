@@ -174,3 +174,28 @@ html, body { height: 100%; }
 @media (max-width: 520px) {
   .login-card { padding: 1.7rem 1.2rem; }
 }
+
+/* ── Google-only login layout ───────────────────── */
+.login-main--centered {
+  align-items: center;
+}
+.btn-google--large {
+  padding: 1rem 1.6rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border: 2px solid var(--gray-200) !important;
+}
+.btn-google--large:not(:disabled):hover {
+  border-color: var(--blue) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+.google-domain-note {
+  text-align: center; font-size: .75rem; color: var(--gray-400);
+  margin-top: .55rem; font-family: var(--font-serif); font-style: italic;
+}
+.login-divider-note {
+  text-align: center; margin-top: 1.5rem; font-size: .88rem; color: var(--gray-600);
+  border-top: 1px solid var(--gray-200); padding-top: 1.25rem;
+}
+.link-accent { color: var(--blue); font-weight: 600; }
+.link-accent:hover { text-decoration: underline; }

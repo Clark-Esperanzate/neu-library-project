@@ -14,19 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // If Google user has no name/college yet, send to complete profile
+  if (session.googleAccount && session.needsProfile) {
+    window.location.href = 'complete-profile.html';
+    return;
+  }
+
   populateTerminal(session);
   updateClock();
   setInterval(updateClock, 1000);
   loadRecentVisits(session.email);
   loadLibraryStats();
-  setInterval(loadLibraryStats, 30000); // refresh every 30s so counts stay live
+  setInterval(loadLibraryStats, 30000);
   prefillCollege(session);
-
-  // Show "Switch to Admin" button if this account also has admin role
-  const roles = session.roles || [session.role];
-  if (roles.includes('admin')) {
-    document.getElementById('switch-to-admin-btn').classList.remove('hidden');
-  }
 
   // Purpose grid
   document.querySelectorAll('.purpose-btn').forEach(btn => {
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Check-in form
-  document.getElementById('checkin-form').addEventListener('submit', e => {
+  // Check-in form — plain (non-async) handler so nothing breaks silently
+  document.getElementById('checkin-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const errEl   = document.getElementById('error-alert');
     const college = document.getElementById('checkin-college').value;
@@ -57,62 +57,97 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     errEl.classList.add('hidden');
 
-    const name = `${session.firstName}${session.middleInitial ? ' ' + session.middleInitial : ''} ${session.lastName}`;
-    const visit = DB.addVisit({
-      userId:   session.id,
+    const name = buildName(session);
+    const visitData = {
+      userId:   session.id || session.firebaseUid || '',
       email:    session.email,
       name,
-      schoolId: session.schoolId,
+      schoolId: session.schoolId || '—',
       college,
       purpose:  selectedPurpose,
       notes,
-      userType: session.userType || 'student'
-    });
+      userType: session.userType || 'student',
+      timestamp: new Date().toISOString()
+    };
 
+    // Save locally
+    const visit = DB.addVisit(visitData);
+
+    // Fire-and-forget Firestore write — doesn't block UI
+    writeVisitToFirestore(visitData);
+
+    // Show welcome modal immediately
     showWelcomeModal(session, visit);
-    resetForm();
     loadRecentVisits(session.email);
     loadLibraryStats();
 
-    // Update visit count in terminal
     const total = DB.getVisitsByUser(session.email).length;
-    document.getElementById('t-visits').textContent = total + ' total';
+    const tvEl = document.getElementById('t-visits');
+    if (tvEl) tvEl.textContent = total + ' total';
   });
 });
 
+/* ── Fire-and-forget Firestore visit write ─────── */
+function writeVisitToFirestore(visitData) {
+  // Uses window global set by the module bridge in visitor-checkin.html
+  // Dynamic import() doesn't work in regular (non-module) scripts
+  if (typeof window._addVisitToFirestore === 'function') {
+    window._addVisitToFirestore(visitData)
+      .catch(function(e) { console.warn('Firestore visit write failed:', e.message); });
+  } else {
+    // Bridge not ready yet — retry once after a short delay
+    setTimeout(function() {
+      if (typeof window._addVisitToFirestore === 'function') {
+        window._addVisitToFirestore(visitData)
+          .catch(function(e) { console.warn('Firestore visit write failed (retry):', e.message); });
+      }
+    }, 2000);
+  }
+}
+
+/* ── Terminal ───────────────────────────────────── */
+function buildName(s) {
+  return `${s.firstName || ''}${s.middleInitial ? ' ' + s.middleInitial : ''} ${s.lastName || ''}`.trim() || s.email;
+}
+
 function populateTerminal(s) {
-  const name = `${s.firstName}${s.middleInitial ? ' ' + s.middleInitial : ''} ${s.lastName}`;
+  const name = buildName(s);
   const typeLabel = { student: 'STUDENT', faculty: 'FACULTY', staff: 'STAFF' }[s.userType] || 'VISITOR';
-  document.getElementById('header-user-name').textContent = name;
-  document.getElementById('t-name').textContent     = name;
-  document.getElementById('t-id').textContent       = s.schoolId || '—';
-  document.getElementById('t-usertype').textContent = typeLabel;
-  document.getElementById('t-college').textContent  = s.college  || '—';
-  document.getElementById('t-program').textContent  = s.program  || '—';
-  document.getElementById('t-email').textContent    = s.email    || '—';
+  const nameEl = document.getElementById('header-user-name');
+  if (nameEl) nameEl.textContent = name;
+  setText('t-name',    name);
+  setText('t-id',      s.schoolId || '—');
+  setText('t-usertype',typeLabel);
+  setText('t-college', s.college  || '—');
+  setText('t-program', s.program  || '—');
+  setText('t-email',   s.email    || '—');
   const total = DB.getVisitsByUser(s.email).length;
-  document.getElementById('t-visits').textContent   = total + ' total';
+  setText('t-visits',  total + ' total');
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 function updateClock() {
   const now = new Date();
-  const d = document.getElementById('t-date');
-  const t = document.getElementById('t-time');
-  if (d) d.textContent = now.toLocaleDateString('en-PH', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
-  if (t) t.textContent = now.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  setText('t-date', now.toLocaleDateString('en-PH', { weekday:'short', month:'short', day:'numeric', year:'numeric' }));
+  setText('t-time', now.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit', second:'2-digit' }));
 }
 
 function loadLibraryStats() {
   const today = DB.getTodayVisits();
   const week  = DB.getThisWeekVisits();
-  document.getElementById('ls-today').textContent      = today.length;
-  document.getElementById('ls-week').textContent       = week.length;
-  document.getElementById('ls-top-college').textContent = DB.getTopCollege(today);
+  setText('ls-today',      today.length);
+  setText('ls-week',       week.length);
+  setText('ls-top-college', DB.getTopCollege(today));
 }
 
 function prefillCollege(s) {
   if (!s.college) return;
   const sel = document.getElementById('checkin-college');
+  if (!sel) return;
   for (const opt of sel.options) {
     if (opt.value === s.college) { opt.selected = true; break; }
   }
@@ -121,6 +156,7 @@ function prefillCollege(s) {
 function loadRecentVisits(email) {
   const visits = DB.getVisitsByUser(email).slice(-6).reverse();
   const list   = document.getElementById('recent-visits-list');
+  if (!list) return;
   if (!visits.length) {
     list.innerHTML = '<li class="recent-item muted">No visits recorded yet.</li>';
     return;
@@ -137,32 +173,60 @@ function loadRecentVisits(email) {
 
 function resetForm() {
   selectedPurpose = '';
-  document.getElementById('purpose').value = '';
+  const pEl = document.getElementById('purpose');
+  if (pEl) pEl.value = '';
   document.querySelectorAll('.purpose-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('reason').value = '';
+  const rEl = document.getElementById('reason');
+  if (rEl) rEl.value = '';
   prefillCollege(DB.getSession());
 }
 
+/* ── Welcome modal ──────────────────────────────── */
 function showWelcomeModal(s, visit) {
-  const name     = `${s.firstName}${s.middleInitial ? ' ' + s.middleInitial : ''} ${s.lastName}`;
-  const d        = new Date(visit.timestamp);
+  const name      = buildName(s);
+  const d         = new Date(visit.timestamp);
   const typeLabel = { student: 'Student', faculty: 'Faculty', staff: 'Employee / Staff' }[s.userType] || 'Visitor';
-  const visitNo  = DB.getVisitsByUser(s.email).length;
+  const visitNo   = DB.getVisitsByUser(s.email).length;
 
-  document.getElementById('welcome-name-text').textContent  = name;
-  document.getElementById('welcome-id').textContent         = s.schoolId || '—';
-  document.getElementById('welcome-usertype').textContent   = typeLabel;
-  document.getElementById('welcome-college').textContent    = visit.college;
-  document.getElementById('welcome-purpose').textContent    = visit.purpose;
-  document.getElementById('welcome-date').textContent       = d.toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('welcome-time').textContent       = d.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
-  document.getElementById('welcome-visitno').textContent    = `#${visitNo}`;
+  setText('welcome-name-text', name);
+  setText('welcome-id',        s.schoolId || '—');
+  setText('welcome-usertype',  typeLabel);
+  setText('welcome-college',   visit.college);
+  setText('welcome-purpose',   visit.purpose);
+  setText('welcome-date',      d.toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' }));
+  setText('welcome-time',      d.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' }));
+  setText('welcome-visitno',   '#' + visitNo);
 
-  document.getElementById('welcome-modal').classList.remove('hidden');
+  const modal = document.getElementById('welcome-modal');
+  if (modal) modal.classList.remove('hidden');
+
+  // 7-second countdown then auto-redirect
+  let seconds = 7;
+  setText('welcome-countdown', seconds);
+
+  if (window._welcomeTimer) clearInterval(window._welcomeTimer);
+  window._welcomeTimer = setInterval(() => {
+    seconds--;
+    setText('welcome-countdown', seconds);
+    if (seconds <= 0) {
+      clearInterval(window._welcomeTimer);
+      window._welcomeTimer = null;
+      closeWelcomeModal();
+    }
+  }, 1000);
 }
 
 function closeWelcomeModal() {
-  document.getElementById('welcome-modal').classList.add('hidden');
+  if (window._welcomeTimer) {
+    clearInterval(window._welcomeTimer);
+    window._welcomeTimer = null;
+  }
+  const modal = document.getElementById('welcome-modal');
+  if (modal) modal.classList.add('hidden');
+
+  // Sign out and redirect to login so next visitor can log in
+  DB.clearSession();
+  window.location.href = 'index.html';
 }
 
 function esc(s) {

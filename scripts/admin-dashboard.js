@@ -18,18 +18,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const s = AUTH.requireAdmin();
   if (!s) return;
 
-  const name = `${s.firstName} ${s.lastName}`;
+  // Firestore sync is handled by the module bridge in admin-dashboard.html
+  // which calls syncVisitsFromFirestore + syncUsersFromFirestore then re-renders.
+
+  const name = ((s.firstName || '') + ' ' + (s.lastName || '')).trim() || s.email;
   document.getElementById('admin-display-name').textContent  = name;
   document.getElementById('admin-display-email').textContent = s.email;
   document.getElementById('admin-avatar-letter').textContent = (s.firstName || 'A')[0].toUpperCase();
 
-  // Show "Switch to Visitor" if account also has visitor role
+  tick(); setInterval(tick, 1000);
+
+  // Show "Switch to Visitor Mode" if account also has visitor role
   const roles = s.roles || [s.role];
   if (roles.includes('visitor')) {
-    document.getElementById('switch-to-visitor-btn').classList.remove('hidden');
+    const btn = document.getElementById('switch-to-visitor-btn');
+    if (btn) btn.classList.remove('hidden');
   }
 
-  tick(); setInterval(tick, 1000);
+  // Expose range state so HTML bridge re-render can use correct period
+  window._currentRange        = 'today';
+  window._currentVisitorRange = 'today';
 
   const todayCount = DB.getTodayVisits().length;
   document.getElementById('topbar-today-count').textContent = todayCount;
@@ -265,14 +273,26 @@ function searchVisitors(q) {
   if (!q.trim()) { filteredVisits = base; }
   else {
     const lo = q.toLowerCase();
-    filteredVisits = base.filter(v =>
-      (v.name     || '').toLowerCase().includes(lo) ||
-      (v.email    || '').toLowerCase().includes(lo) ||
-      (v.college  || '').toLowerCase().includes(lo) ||
-      (v.purpose  || '').toLowerCase().includes(lo) ||
-      (v.schoolId || '').toLowerCase().includes(lo) ||
-      (v.userType || '').toLowerCase().includes(lo)
-    );
+    filteredVisits = base.filter(v => {
+      const d = new Date(v.timestamp);
+      const dateStr = d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }).toLowerCase();
+      const timeStr = d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }).toLowerCase();
+      const fullDate = d.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).toLowerCase();
+      const typeLabel = { student: 'student', faculty: 'faculty', staff: 'staff' }[v.userType] || '';
+      return (
+        (v.name     || '').toLowerCase().includes(lo) ||
+        (v.email    || '').toLowerCase().includes(lo) ||
+        (v.college  || '').toLowerCase().includes(lo) ||
+        (v.purpose  || '').toLowerCase().includes(lo) ||
+        (v.schoolId || '').toLowerCase().includes(lo) ||
+        (v.userType || '').toLowerCase().includes(lo) ||
+        (v.notes    || '').toLowerCase().includes(lo) ||
+        typeLabel.includes(lo) ||
+        dateStr.includes(lo) ||
+        timeStr.includes(lo) ||
+        fullDate.includes(lo)
+      );
+    });
   }
   visitorPage = 1;
   renderVisitorTable();
@@ -358,11 +378,31 @@ function searchUsers(q) {
   if (currentUserFilter === 'blocked') users = users.filter(u => u.isBlocked);
   if (!q.trim()) { renderUsersTable(users); return; }
   const lo = q.toLowerCase();
-  renderUsersTable(users.filter(u =>
-    (`${u.firstName} ${u.lastName}`).toLowerCase().includes(lo) ||
-    (u.email    || '').toLowerCase().includes(lo) ||
-    (u.schoolId || '').toLowerCase().includes(lo)
-  ));
+  const typeMap = { student: 'student', faculty: 'faculty', staff: 'staff' };
+  renderUsersTable(users.filter(u => {
+    const name      = `${u.firstName}${u.middleInitial ? ' ' + u.middleInitial : ''} ${u.lastName}`.toLowerCase();
+    const roles     = (u.roles || [u.role || 'visitor']).join(' ').toLowerCase();
+    const typeLabel = (typeMap[u.userType] || 'student');
+    const college   = (u.college || '').toLowerCase();
+    const program   = (u.program || '').toLowerCase();
+    const regDate   = new Date(u.registeredAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }).toLowerCase();
+    const regFull   = new Date(u.registeredAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }).toLowerCase();
+    const visits    = String(DB.getVisitsByUser(u.email).length);
+    const status    = u.isBlocked ? 'blocked' : 'active';
+    return (
+      name.includes(lo) ||
+      (u.email    || '').toLowerCase().includes(lo) ||
+      (u.schoolId || '').toLowerCase().includes(lo) ||
+      typeLabel.includes(lo) ||
+      college.includes(lo) ||
+      program.includes(lo) ||
+      roles.includes(lo) ||
+      regDate.includes(lo) ||
+      regFull.includes(lo) ||
+      visits.includes(lo) ||
+      status.includes(lo)
+    );
+  }));
 }
 
 function renderUsersTable(users) {
@@ -393,6 +433,8 @@ function renderUsersTable(users) {
       ? `<button class="btn-revoke-admin" onclick="toggleAdminRole('${u.email}',false)" title="Remove admin role">− Admin</button>`
       : `<button class="btn-grant-admin" onclick="toggleAdminRole('${u.email}',true)" title="Grant admin role">+ Admin</button>`;
 
+    
+
     return `<tr>
       <td><strong>${esc(name)}</strong><br/><small style="color:var(--gray-400);font-size:.72rem">${esc(u.schoolId || '')}</small></td>
       <td style="font-size:.82rem">${esc(u.email)}</td>
@@ -407,18 +449,60 @@ function renderUsersTable(users) {
   }).join('');
 }
 
-function toggleBlockUser(email, block) {
+async function toggleBlockUser(email, block) {
   if (!confirm(`Are you sure you want to ${block ? 'block' : 'unblock'} ${email}?`)) return;
+
+  // Update localStorage
   DB.updateUserBlockStatus(email, block);
+
+  // Sync to Firestore
+  try {
+    const { db, collection, query, where, getDocs, updateDoc, doc } =
+      await import('./firebase-config.js');
+    const q    = query(collection(db, 'users'), where('email', '==', email));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      await updateDoc(doc(db, 'users', d.id), { isBlocked: block });
+    }
+  } catch (e) {
+    console.warn('Firestore block update skipped:', e.message);
+  }
+
   loadUserManagement(currentUserFilter);
 }
 
-function toggleAdminRole(email, grant) {
+async function toggleAdminRole(email, grant) {
   const action = grant ? 'grant admin role to' : 'revoke admin role from';
   if (!confirm(`Are you sure you want to ${action} ${email}?`)) return;
+
+  // Update localStorage
   grant ? DB.grantAdminRole(email) : DB.revokeAdminRole(email);
+
+  // Get updated roles from localStorage
+  const updatedUser  = DB.getUserByEmail(email);
+  const updatedRoles = updatedUser?.roles || (grant ? ['visitor','admin'] : ['visitor']);
+  const updatedRole  = updatedRoles.includes('admin') ? 'admin' : 'visitor';
+
+  // Sync to Firestore so it survives Google Sign-In sessions
+  try {
+    const { db, collection, query, where, getDocs, updateDoc, doc } =
+      await import('./firebase-config.js');
+    const q    = query(collection(db, 'users'), where('email', '==', email));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      await updateDoc(doc(db, 'users', d.id), {
+        roles: updatedRoles,
+        role:  updatedRole
+      });
+    }
+  } catch (e) {
+    console.warn('Firestore role update skipped (will apply on next login):', e.message);
+  }
+
   loadUserManagement(currentUserFilter);
 }
+
+
 
 /* ── Activity Feed ────────────────────────────────── */
 function startActivityFeed() { refreshActivityFeed(); setInterval(refreshActivityFeed, 10000); }

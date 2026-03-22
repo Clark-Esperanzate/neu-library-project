@@ -178,6 +178,12 @@
         </div>
         <p class="welcome-note">Please present this slip to the librarian on duty. Enjoy your visit!</p>
       </div>
+      <div class="welcome-countdown-bar no-print">
+        <div class="welcome-countdown-fill" id="welcome-countdown-fill"></div>
+      </div>
+      <p class="welcome-redirect-note no-print">
+        Redirecting to login in <strong id="welcome-countdown">7</strong> seconds…
+      </p>
       <div class="welcome-actions no-print">
         <button class="btn-print" onclick="window.print()">🖨️ Print Slip</button>
         <button class="btn-primary" onclick="closeWelcomeModal()">Done ✓</button>
@@ -187,6 +193,14 @@
 
   <script src="scripts/data-store.js"></script>
   <script src="scripts/auth.js"></script>
+
+  <!-- Firebase bridge: loads as module, exposes functions as window globals -->
+  <script type="module">
+    import { addVisitToFirestore } from './scripts/firebase-auth.js';
+    window._addVisitToFirestore = addVisitToFirestore;
+    window._firebaseBridgeReady = true;
+  </script>
+
   <script src="scripts/visitor-page.js"></script>
 </body>
 </html>

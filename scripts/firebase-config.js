@@ -25,7 +25,7 @@ import { getAuth, GoogleAuthProvider,
          onAuthStateChanged }                   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc,
          collection, addDoc, query, where,
-         orderBy, getDocs, updateDoc,
+         orderBy, getDocs, updateDoc, deleteDoc,
          serverTimestamp, Timestamp }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app      = initializeApp(firebaseConfig);
@@ -39,5 +39,5 @@ provider.setCustomParameters({ hd: 'neu.edu.ph' });
 export { auth, db, provider, firebaseConfig, GoogleAuthProvider,
          signInWithPopup, signOut, onAuthStateChanged,
          doc, getDoc, setDoc, collection, addDoc,
-         query, where, orderBy, getDocs, updateDoc,
+         query, where, orderBy, getDocs, updateDoc, deleteDoc,
          serverTimestamp, Timestamp };

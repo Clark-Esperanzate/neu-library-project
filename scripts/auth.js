@@ -1,9 +1,6 @@
 /* =========================================================
    auth.js  –  Authentication & Authorization
-   - Institutional domain enforcement (@neu.edu.ph)
-   - Role-based access control (visitor / admin)
-   - Role switching within the same session
-   - Google Sign-In support (institutional domain restricted)
+   Google Sign-In ONLY — no password login
    ========================================================= */
 
 const AUTH = {
@@ -13,31 +10,7 @@ const AUTH = {
     return typeof email === 'string' && email.trim().toLowerCase().endsWith(this.DOMAIN);
   },
 
-  /* Standard login (email or school ID + password) */
-  login(identifier, password) {
-    if (!identifier || !password)
-      return { success: false, error: 'Please enter your ID number or email, and password.' };
-
-    let user = null;
-    if (identifier.includes('@')) {
-      if (!this.isInstitutionalEmail(identifier))
-        return { success: false, error: 'Only @neu.edu.ph institutional email addresses are permitted.' };
-      user = DB.getUserByEmail(identifier.trim());
-    } else {
-      user = DB.getUserBySchoolId(identifier.trim());
-    }
-
-    if (!user)
-      return { success: false, error: 'No account found. Please check your credentials or register first.' };
-    if (user.password !== password)
-      return { success: false, error: 'Incorrect password. Please try again.' };
-    if (user.isBlocked)
-      return { success: false, error: 'This account has been suspended. Please contact library administration.' };
-
-    return this._createSession(user);
-  },
-
-  /* Google Sign-In callback — called after Google OAuth resolves */
+  /* Google Sign-In callback — primary auth method */
   handleGoogleSignIn(googleUser) {
     const email = googleUser.email || (googleUser.getBasicProfile?.()?.getEmail?.());
     if (!email) return { success: false, error: 'Could not retrieve email from Google account.' };
@@ -46,18 +19,14 @@ const AUTH = {
 
     let user = DB.getUserByEmail(email);
     if (!user) {
-      // Auto-register from Google profile
       const name  = googleUser.name || googleUser.getBasicProfile?.()?.getName?.() || '';
       const parts = name.trim().split(' ');
-      const firstName = parts[0] || 'User';
-      const lastName  = parts.slice(1).join(' ') || '';
       user = DB.addUser({
-        schoolId: '', firstName, middleInitial: '', lastName,
-        email: email.toLowerCase(),
-        college: '', program: '',
-        password: '', // no password — Google-only account
-        role: 'visitor', roles: ['visitor'], userType: 'student',
-        googleAccount: true
+        schoolId: '', firstName: parts[0] || 'User', middleInitial: '',
+        lastName: parts.slice(1).join(' ') || '',
+        email: email.toLowerCase(), college: '', program: '',
+        password: '', role: 'visitor', roles: ['visitor'],
+        userType: 'student', googleAccount: true
       });
     }
 
@@ -70,26 +39,21 @@ const AUTH = {
   _createSession(user) {
     const { password: _, ...safe } = user;
     const roles = DB.getUserRoles(user.email);
-    // Active role: prefer the highest privilege available
     safe.activeRole = roles.includes('admin') ? 'admin' : 'visitor';
     safe.roles = roles;
     DB.setSession(safe);
     return { success: true, user: safe };
   },
 
-  /* Registration */
+  /* Registration — still used for first-time Google users completing profile */
   register(data) {
-    const { schoolId, firstName, lastName, email, college, program, password, confirmPassword, userType } = data;
-    if (!schoolId || !firstName || !lastName || !email || !college || !program || !password)
+    const { schoolId, firstName, lastName, email, college, program, userType } = data;
+    if (!schoolId || !firstName || !lastName || !email || !college || !program)
       return { success: false, error: 'All required fields must be completed.' };
     if (!this.isInstitutionalEmail(email))
       return { success: false, error: 'Only @neu.edu.ph institutional email addresses are accepted.' };
     if (!/^\d{2}-\d{4,6}-\d{3,4}$/.test(schoolId.trim()))
       return { success: false, error: 'School ID must follow the format: YY-NNNNN-NNN (e.g. 24-*****-***).' };
-    if (password.length < 8)
-      return { success: false, error: 'Password must be at least 8 characters.' };
-    if (password !== confirmPassword)
-      return { success: false, error: 'Passwords do not match.' };
     if (DB.getUserByEmail(email))
       return { success: false, error: 'An account with this email address already exists.' };
     if (DB.getUserBySchoolId(schoolId))
@@ -120,7 +84,6 @@ const AUTH = {
     return s;
   },
 
-  /* Switch active role without logging out */
   switchRole(role) {
     const ok = DB.switchSessionRole(role);
     if (!ok) return false;
@@ -130,7 +93,6 @@ const AUTH = {
   }
 };
 
-/* ── Globals ──────────────────────────────────────── */
 function logout() { DB.clearSession(); window.location.href = 'index.html'; }
 
 function togglePassword(id, btn) {
