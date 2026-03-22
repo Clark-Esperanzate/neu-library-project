@@ -129,54 +129,6 @@ The registration form auto-formats the ID as you type.
 
 ---
 
-## 🔥 Firebase Setup
-
-### Step 1 — Create a Firebase Project
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. Click **Add Project** → Name it → Click **Create**
-
-### Step 2 — Enable Google Sign-In
-1. Firebase Console → **Authentication** → **Get Started**
-2. Click **Sign-in method** → **Google** → Toggle **Enable** → Save
-
-### Step 3 — Create Firestore Database
-1. Firebase Console → **Firestore Database** → **Create Database**
-2. Choose **Start in test mode** → Select region `asia-southeast1` → **Enable**
-
-### Step 4 — Register Web App & Get Config
-1. Project Overview → Click **`</>`** (Web) icon → Register app
-2. Copy the `firebaseConfig` object
-
-### Step 5 — Paste Config into Project
-Open `scripts/firebase-config.js` and replace the placeholder values with your real config.
-
-### Step 6 — Update `.firebaserc`
-Replace `YOUR_PROJECT_ID` with your actual Firebase project ID.
-
-### Step 7 — Add Authorized Domain
-Firebase Console → **Authentication** → **Settings** → **Authorized domains** → Add your hosting domain.
-
----
-
-## 🚢 Deploying to Firebase Hosting
-
-```bash
-# Install Node.js from nodejs.org first, then:
-npm install -g firebase-tools
-firebase login
-cd path/to/neu-library
-firebase deploy
-```
-
-Your site will be live at: `https://your-project-id.web.app`
-
-To redeploy after any changes:
-```bash
-firebase deploy
-```
-
----
-
 ## 🔒 Firestore Security Rules
 
 Apply these in Firebase Console → Firestore → Rules:
