@@ -228,75 +228,50 @@ async function addVisitToFirestore(visitData) {
 async function syncVisitsFromFirestore() {
   try {
     const snap = await getDocs(collection(db, 'visits'));
-    const firestoreVisits = snap.docs.map(d => {
-      const data = d.data();
-      return {
-        id:        d.id,
-        userId:    data.userId    || '',
-        email:     data.email     || '',
-        name:      data.name      || '',
-        schoolId:  data.schoolId  || '—',
-        college:   data.college   || '',
-        purpose:   data.purpose   || '',
-        notes:     data.notes     || '',
-        userType:  data.userType  || 'student',
-        timestamp: data.timestamp || new Date().toISOString()
-      };
-    });
 
-    // MERGE: don't wipe local visits — combine with Firestore visits
-    // Local visits that aren't in Firestore yet (e.g. just written) are kept
-    const localVisits  = DB.getVisits();
-    const firestoreIds = new Set(firestoreVisits.map(v => v.id));
-
-    // Keep local visits that don't have a Firestore ID match
-    const localOnly = localVisits.filter(v => !firestoreIds.has(v.id));
-
-    // Also push any local-only visits up to Firestore so they persist
-    for (const v of localOnly) {
-      try {
-        await addDoc(collection(db, 'visits'), {
-          userId:    v.userId    || '',
-          email:     v.email     || '',
-          name:      v.name      || '',
-          schoolId:  v.schoolId  || '—',
-          college:   v.college   || '',
-          purpose:   v.purpose   || '',
-          notes:     v.notes     || '',
-          userType:  v.userType  || 'student',
-          timestamp: v.timestamp || new Date().toISOString()
-        });
-      } catch (e) { /* will retry next sync */ }
+    if (snap.empty) {
+      return DB.getVisits();
     }
 
-    // Re-fetch after uploading local-only visits
-    const finalSnap = localOnly.length > 0
-      ? await getDocs(collection(db, 'visits'))
-      : snap;
+    // Deduplicate: if two docs have the same email + timestamp, keep only the first
+    const seen    = new Set();
+    const toDelete = [];
+    const visits  = [];
 
-    const allVisits = (localOnly.length > 0 ? finalSnap : snap).docs.map(d => {
+    snap.docs.forEach(d => {
       const data = d.data();
-      return {
-        id:        d.id,
-        userId:    data.userId    || '',
-        email:     data.email     || '',
-        name:      data.name      || '',
-        schoolId:  data.schoolId  || '—',
-        college:   data.college   || '',
-        purpose:   data.purpose   || '',
-        notes:     data.notes     || '',
-        userType:  data.userType  || 'student',
-        timestamp: data.timestamp || new Date().toISOString()
-      };
+      const key  = (data.email || '') + '|' + (data.timestamp || '');
+      if (seen.has(key)) {
+        toDelete.push(d.id); // mark duplicate for deletion
+      } else {
+        seen.add(key);
+        visits.push({
+          id:        d.id,
+          userId:    data.userId    || '',
+          email:     data.email     || '',
+          name:      data.name      || '',
+          schoolId:  data.schoolId  || '—',
+          college:   data.college   || '',
+          purpose:   data.purpose   || '',
+          notes:     data.notes     || '',
+          userType:  data.userType  || 'student',
+          timestamp: data.timestamp || new Date().toISOString()
+        });
+      }
     });
 
-    allVisits.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    DB.saveVisits(allVisits);
-    return allVisits;
+    // Delete duplicates from Firestore silently using already-imported deleteDoc
+    for (const id of toDelete) {
+      try { await deleteDoc(doc(db, 'visits', id)); } catch(e) {}
+    }
+
+    visits.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    DB.saveVisits(visits);
+    return visits;
 
   } catch (e) {
     console.warn('Firestore visit sync failed:', e.message);
-    return DB.getVisits(); // return local data unchanged
+    return DB.getVisits();
   }
 }
 
